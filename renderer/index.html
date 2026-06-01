@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>naminote</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── Toolbar ────────────────────────────────────────────── -->
+  <div class="toolbar" id="toolbar">
+    <span class="app-name">naminote</span>
+    <div class="tb-group">
+      <button class="tb-btn" id="btn-new"     title="新規 (Ctrl+N)">新規</button>
+      <button class="tb-btn" id="btn-save"    title="保存 (Ctrl+S)">保存</button>
+      <button class="tb-btn" id="btn-history" title="履歴 (Ctrl+H)">履歴</button>
+    </div>
+    <div class="font-ctrl">
+      <button class="tb-btn-sm" id="btn-font-dec" title="文字を小さく (Ctrl+-)">A−</button>
+      <span class="font-display" id="font-display">18pt</span>
+      <button class="tb-btn-sm" id="btn-font-inc" title="文字を大きく (Ctrl+=)">A＋</button>
+    </div>
+  </div>
+
+  <!-- ── Page area ──────────────────────────────────────────── -->
+  <div class="content-area">
+    <div class="page-outer">
+      <textarea id="editor" spellcheck="false"
+                placeholder="ここにノートを書いてください…"></textarea>
+    </div>
+  </div>
+
+  <!-- ── Navigation bar ─────────────────────────────────────── -->
+  <div class="navbar">
+    <button class="nav-btn" id="btn-prev" title="前のページ (Ctrl+←)">◀ 前</button>
+    <button class="nav-btn" id="btn-next" title="次のページ (Ctrl+→)">次 ▶</button>
+    <span class="page-num" id="page-num">1 / 1</span>
+    <span class="page-status" id="page-status"></span>
+    <button class="nav-btn ml-auto" id="btn-add" title="新しいページ">＋ 新ページ</button>
+  </div>
+
+  <!-- ── History modal ──────────────────────────────────────── -->
+  <div class="overlay" id="overlay" style="display:none">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title">保存した履歴</span>
+        <button class="modal-x" id="modal-x">×</button>
+      </div>
+      <div class="modal-body">
+        <ul class="hist-list" id="hist-list"></ul>
+      </div>
+      <div class="modal-foot">
+        <button class="m-btn m-btn-primary" id="hist-open">開く</button>
+        <button class="m-btn m-btn-danger"  id="hist-del">削除</button>
+        <button class="m-btn"               id="hist-close">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
