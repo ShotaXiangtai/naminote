@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ── Desktop: Windows / macOS (Universal) / Linux ────────────────
+  # ── Desktop: Windows / macOS (ARM64 + Intel 別) / Linux ─────────
   build-desktop:
     strategy:
       fail-fast: false
@@ -16,9 +16,12 @@ jobs:
           - platform: windows-latest
             rust-target: x86_64-pc-windows-msvc
             args: ''
-          - platform: macos-latest
-            rust-target: aarch64-apple-darwin,x86_64-apple-darwin
-            args: '--target universal-apple-darwin'
+          - platform: macos-latest       # ARM64 runner
+            rust-target: aarch64-apple-darwin
+            args: '--target aarch64-apple-darwin'
+          - platform: macos-13           # Intel runner
+            rust-target: x86_64-apple-darwin
+            args: '--target x86_64-apple-darwin'
           - platform: ubuntu-22.04
             rust-target: x86_64-unknown-linux-gnu
             args: ''
@@ -65,14 +68,15 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: naminote-${{ matrix.platform }}
+          name: naminote-${{ matrix.platform }}-${{ matrix.rust-target }}
           if-no-files-found: warn
           path: |
             src-tauri/target/release/bundle/**/*.exe
             src-tauri/target/release/bundle/**/*.msi
             src-tauri/target/release/bundle/**/*.AppImage
             src-tauri/target/release/bundle/**/*.deb
-            src-tauri/target/universal-apple-darwin/release/bundle/**/*.dmg
+            src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.dmg
+            src-tauri/target/x86_64-apple-darwin/release/bundle/**/*.dmg
 
   # ── Android (debug APK・署名不要) ────────────────────────────────
   build-android:
@@ -85,6 +89,12 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -123,11 +133,21 @@ jobs:
   build-flatpak:
     runs-on: ubuntu-22.04
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-46
+      image: bilelmoussaoui/flatpak-github-actions:gnome-47
       options: --privileged
 
     steps:
       - uses: actions/checkout@v4
+
+      # Flatpak sandbox blocks network during build.
+      # Pre-generate cargo-sources.json here (outside the sandbox).
+      - name: Generate Cargo sources for offline build
+        run: |
+          pip3 install aiohttp toml
+          curl -fsSL -o /tmp/flatpak-cargo-generator.py \
+            https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py
+          python3 /tmp/flatpak-cargo-generator.py src-tauri/Cargo.lock \
+            -o flatpak/cargo-sources.json
 
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
