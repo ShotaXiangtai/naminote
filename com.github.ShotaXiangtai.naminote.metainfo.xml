@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.ShotaXiangtai.naminote</id>
+
+  <name>naminote</name>
+  <name xml:lang="ja">naminote</name>
+
+  <summary>Study-focused paged note-taking app</summary>
+  <summary xml:lang="ja">勉強特化のページ制ノートソフト</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <description>
+    <p>
+      naminote is a note-taking application designed for studying.
+      It uses a page-based layout that automatically advances to the next page
+      when the current one is full, keeping your notes organized naturally.
+    </p>
+    <p xml:lang="ja">
+      naminoteは勉強に特化したページ制のノートアプリです。
+      ページが満杯になると自動的に次のページへ進み、ノートを自然に整理できます。
+      フォントサイズの調整、履歴管理、キーボードショートカットに対応しています。
+    </p>
+  </description>
+
+  <categories>
+    <category>Education</category>
+    <category>Utility</category>
+  </categories>
+
+  <keywords>
+    <keyword>note</keyword>
+    <keyword>notes</keyword>
+    <keyword>study</keyword>
+    <keyword xml:lang="ja">ノート</keyword>
+    <keyword xml:lang="ja">勉強</keyword>
+  </keywords>
+
+  <url type="homepage">https://github.com/ShotaXiangtai/naminote</url>
+  <url type="bugtracker">https://github.com/ShotaXiangtai/naminote/issues</url>
+
+  <launchable type="desktop-id">com.github.ShotaXiangtai.naminote.desktop</launchable>
+
+  <releases>
+    <release version="1.0.0" date="2026-06-01">
+      <description>
+        <p>Initial release. Migrated from Electron to Tauri 2.</p>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+</component>

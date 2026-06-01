@@ -319,3 +319,135 @@ body.unsaved .app-name::after {
 ::-webkit-scrollbar       { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
+
+/* ── Active state for toggle buttons ─────────────────────────── */
+.tb-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Character frequency panel ───────────────────────────────── */
+.freq-panel {
+  display: none;
+  position: fixed;
+  top: 50px;
+  right: 0;
+  bottom: 40px;
+  width: 176px;
+  background: var(--modal-bg);
+  border-left: 1px solid #ccc8bc;
+  box-shadow: -3px 0 10px rgba(0,0,0,0.07);
+  overflow-y: auto;
+  z-index: 50;
+  padding: 10px 8px;
+}
+
+.freq-panel.open { display: block; }
+
+/* Push content area left when panel is open */
+body.freq-open .content-area { padding-right: calc(176px + 28px); }
+
+.freq-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d4d0c8;
+}
+
+.freq-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.freq-total-count {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.2;
+}
+
+.freq-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.freq-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 4px;
+  border-radius: 3px;
+  font-size: 13px;
+  transition: background 0.1s;
+}
+.freq-item:hover { background: #eae6de; }
+
+.freq-ch {
+  color: var(--text-main);
+  font-family: "Yu Gothic UI", "Meiryo UI", "Segoe UI", sans-serif;
+}
+
+.freq-cnt {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  background: #e8e4dc;
+  border-radius: 8px;
+  padding: 0 5px;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* ── Mobile / touch responsive ───────────────────────────────── */
+@media (max-width: 600px) {
+  .toolbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 6px 10px;
+    gap: 4px;
+    -webkit-app-region: no-drag;
+  }
+
+  .app-name { font-size: 13px; margin-right: 6px; }
+
+  .tb-btn    { padding: 7px 12px; font-size: 12px; }
+  .tb-btn-sm { padding: 7px 10px; font-size: 12px; }
+
+  .font-ctrl { margin-left: 0; }
+
+  .content-area { padding: 8px 8px 4px; }
+
+  .page-outer::after { left: 36px; }
+
+  #editor {
+    font-size: 16px;
+    padding: 20px 12px 20px 44px;
+  }
+
+  .navbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 5px 10px;
+    gap: 6px;
+  }
+
+  .nav-btn { padding: 7px 14px; font-size: 12px; }
+
+  .modal { width: 95vw; max-height: 80vh; }
+}
+
+/* ── Touch-friendly tap targets (pointer: coarse = touchscreen) ── */
+@media (pointer: coarse) {
+  .tb-btn, .tb-btn-sm, .nav-btn, .m-btn {
+    min-height: 44px;
+  }
+
+  .hist-item { padding: 13px 20px; }
+}

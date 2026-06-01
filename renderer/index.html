@@ -15,6 +15,7 @@
       <button class="tb-btn" id="btn-new"     title="新規 (Ctrl+N)">新規</button>
       <button class="tb-btn" id="btn-save"    title="保存 (Ctrl+S)">保存</button>
       <button class="tb-btn" id="btn-history" title="履歴 (Ctrl+H)">履歴</button>
+      <button class="tb-btn" id="btn-freq"    title="文字カウント (Ctrl+K)">文字数</button>
     </div>
     <div class="font-ctrl">
       <button class="tb-btn-sm" id="btn-font-dec" title="文字を小さく (Ctrl+-)">A−</button>
@@ -56,6 +57,15 @@
         <button class="m-btn"               id="hist-close">閉じる</button>
       </div>
     </div>
+  </div>
+
+  <!-- ── Character frequency panel ────────────────────────────── -->
+  <div class="freq-panel" id="freq-panel">
+    <div class="freq-header">
+      <span class="freq-title">文字カウント</span>
+      <span class="freq-total-count" id="freq-total"></span>
+    </div>
+    <ul class="freq-list" id="freq-list"></ul>
   </div>
 
   <script src="app.js"></script>

@@ -1,5 +1,7 @@
 'use strict'
 
+const invoke = window.__TAURI__.core.invoke
+
 // ── State ──────────────────────────────────────────────────────────
 let pages       = ['']
 let currentPage = 0
@@ -88,6 +90,7 @@ function loadPage(idx) {
   editor.setSelectionRange(editor.value.length, editor.value.length)
   refreshNav()
   refreshStatus()
+  renderFreq()
 }
 
 // ── Auto-advance to next page ─────────────────────────────────────
@@ -130,8 +133,72 @@ editor.addEventListener('input', () => {
   if (!advancing) {
     markUnsaved(true)
     refreshStatus()
+    scheduleFreq()
   }
 })
+
+// ── Character frequency counter ──────────────────────────────
+let freqOpen = false
+let freqTimer = null
+
+function countChars() {
+  // Read current page from editor directly (no side-effect)
+  const snap = [...pages]
+  while (snap.length <= currentPage) snap.push('')
+  snap[currentPage] = editor.value
+
+  const map = {}
+  for (const ch of snap.join('')) {
+    if (ch === '\n' || ch === '\r' || ch === ' ' || ch === '　') continue
+    map[ch] = (map[ch] || 0) + 1
+  }
+  return map
+}
+
+function renderFreq() {
+  if (!freqOpen) return
+  const map = countChars()
+  const total = Object.values(map).reduce((s, n) => s + n, 0)
+  document.getElementById('freq-total').textContent = total.toLocaleString() + ' 字'
+  const sorted = Object.entries(map).sort((a, b) => b[1] - a[1])
+  document.getElementById('freq-list').innerHTML = sorted
+    .map(([ch, cnt]) =>
+      `<li class="freq-item"><span class="freq-ch">${escHtml(ch)}</span><span class="freq-cnt">${cnt}</span></li>`)
+    .join('')
+}
+
+function scheduleFreq() {
+  if (!freqOpen) return
+  clearTimeout(freqTimer)
+  freqTimer = setTimeout(renderFreq, 150)
+}
+
+document.getElementById('btn-freq').addEventListener('click', () => {
+  freqOpen = !freqOpen
+  document.getElementById('freq-panel').classList.toggle('open', freqOpen)
+  document.getElementById('btn-freq').classList.toggle('active', freqOpen)
+  document.body.classList.toggle('freq-open', freqOpen)
+  if (freqOpen) renderFreq()
+})
+
+// ── Touch swipe for page navigation ──────────────────────────────
+let touchStartX = 0
+let touchStartY = 0
+
+editor.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX
+  touchStartY = e.touches[0].clientY
+}, { passive: true })
+
+editor.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX
+  const dy = e.changedTouches[0].clientY - touchStartY
+  // Horizontal swipe > 60px and more horizontal than vertical
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    if (dx < 0 && currentPage < pages.length - 1) loadPage(currentPage + 1)
+    else if (dx > 0 && currentPage > 0)           loadPage(currentPage - 1)
+  }
+}, { passive: true })
 
 // ── Toolbar buttons ───────────────────────────────────────────────
 document.getElementById('btn-new').addEventListener('click', newSession)
@@ -174,6 +241,7 @@ document.addEventListener('keydown', e => {
     }
     if (e.key === 'ArrowRight') { e.preventDefault(); if (currentPage < pages.length - 1) loadPage(currentPage + 1) }
     if (e.key === 'ArrowLeft')  { e.preventDefault(); if (currentPage > 0) loadPage(currentPage - 1) }
+    if (e.key === 'k') { e.preventDefault(); document.getElementById('btn-freq').click() }
   }
 })
 
@@ -198,7 +266,7 @@ async function saveSession() {
     fontSize,
     pages,
   }
-  await window.api.saveNote(data)
+  await invoke('save_note', { data })
   markUnsaved(false)
 }
 
@@ -211,6 +279,7 @@ async function loadData(data) {
   markUnsaved(false)
   refreshNav()
   refreshStatus()
+  renderFreq()
 }
 
 // ── History modal ─────────────────────────────────────────────────
@@ -218,7 +287,7 @@ async function openHistory() {
   selHist  = -1
   histPaths = []
 
-  const notes = await window.api.listNotes()
+  const notes = await invoke('list_notes')
   histList.innerHTML = ''
 
   if (!notes.length) {
@@ -258,7 +327,7 @@ async function histOpenSelected() {
     if (!confirm('保存されていない変更があります。\n別のノートを開きますか？')) return
   }
   try {
-    const data = await window.api.loadNote(histPaths[selHist])
+    const data = await invoke('load_note', { fp: histPaths[selHist] })
     await loadData(data)
     closeModal()
   } catch (e) {
@@ -269,7 +338,7 @@ async function histOpenSelected() {
 async function histDeleteSelected() {
   if (selHist < 0 || selHist >= histPaths.length) return
   if (!confirm('この履歴を削除しますか？')) return
-  await window.api.deleteNote(histPaths[selHist])
+  await invoke('delete_note', { fp: histPaths[selHist] })
   histPaths.splice(selHist, 1)
   const items = histList.querySelectorAll('.hist-item')
   if (items[selHist]) items[selHist].remove()
@@ -296,7 +365,7 @@ document.getElementById('overlay').addEventListener('click', e => {
 ;(async () => {
   applyFont()
   try {
-    const last = await window.api.loadLast()
+    const last = await invoke('load_last')
     if (last) await loadData(last)
     else refreshNav()
   } catch {

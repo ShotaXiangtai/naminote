@@ -1,0 +1,40 @@
+app-id: com.github.ShotaXiangtai.naminote
+runtime: org.gnome.Platform
+runtime-version: '46'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node20
+command: naminote
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=xdg-data/com.github.ShotaXiangtai.naminote:create
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node20/bin
+  env:
+    CARGO_HOME: /run/build/naminote/cargo
+    npm_config_cache: /run/build/naminote/npm-cache
+
+modules:
+  - name: naminote
+    buildsystem: simple
+    build-commands:
+      - npm ci
+      - npm run tauri build -- --bundles none
+      - install -Dm755 src-tauri/target/release/naminote -t /app/bin/
+      - install -Dm644 flatpak/com.github.ShotaXiangtai.naminote.desktop
+          /app/share/applications/com.github.ShotaXiangtai.naminote.desktop
+      - install -Dm644 src-tauri/icons/128x128.png
+          /app/share/icons/hicolor/128x128/apps/com.github.ShotaXiangtai.naminote.png
+      - install -Dm644 src-tauri/icons/32x32.png
+          /app/share/icons/hicolor/32x32/apps/com.github.ShotaXiangtai.naminote.png
+      - install -Dm644 com.github.ShotaXiangtai.naminote.metainfo.xml
+          /app/share/metainfo/com.github.ShotaXiangtai.naminote.metainfo.xml
+    sources:
+      - type: dir
+        path: ../

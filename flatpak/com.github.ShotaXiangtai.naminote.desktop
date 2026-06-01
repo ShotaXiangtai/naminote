@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=naminote
+Name[ja]=naminote
+Comment=Study-focused paged note-taking app
+Comment[ja]=勉強特化のページ制ノートソフト
+Exec=naminote
+Icon=com.github.ShotaXiangtai.naminote
+Type=Application
+Categories=Education;Utility;
+Keywords=note;notes;study;notepad;
+Keywords[ja]=ノート;メモ;勉強;

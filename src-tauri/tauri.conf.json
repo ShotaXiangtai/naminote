@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "naminote",
+  "version": "1.0.0",
+  "identifier": "com.github.ShotaXiangtai.naminote",
+  "build": {
+    "frontendDist": "../renderer"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "naminote",
+        "width": 900,
+        "height": 760,
+        "minWidth": 640,
+        "minHeight": 520
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Utility",
+    "shortDescription": "勉強特化のページ制ノートソフト",
+    "longDescription": "naminoteは勉強に特化したページ制のノートアプリです。",
+    "macOS": {
+      "minimumSystemVersion": "10.13"
+    },
+    "windows": {
+      "nsis": {
+        "languages": ["Japanese"],
+        "displayLanguageSelector": false
+      },
+      "wix": null
+    }
+  }
+}
