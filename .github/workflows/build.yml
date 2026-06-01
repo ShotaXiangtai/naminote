@@ -7,26 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ── Desktop: Windows / macOS (ARM64 + Intel 別) / Linux ─────────
-  build-desktop:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: windows-latest
-            rust-target: x86_64-pc-windows-msvc
-            args: ''
-          - platform: macos-latest       # ARM64 runner
-            rust-target: aarch64-apple-darwin
-            args: '--target aarch64-apple-darwin'
-          - platform: macos-13           # Intel runner
-            rust-target: x86_64-apple-darwin
-            args: '--target x86_64-apple-darwin'
-          - platform: ubuntu-22.04
-            rust-target: x86_64-unknown-linux-gnu
-            args: ''
-
-    runs-on: ${{ matrix.platform }}
+  build-windows:
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -38,23 +20,11 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.rust-target }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-
-      - name: Install Linux system deps
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf
 
       - name: Install npm deps
         run: npm install
@@ -62,114 +32,24 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: ${{ matrix.args }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: naminote-${{ matrix.platform }}-${{ matrix.rust-target }}
-          if-no-files-found: warn
+          name: naminote-windows
           path: |
             src-tauri/target/release/bundle/**/*.exe
             src-tauri/target/release/bundle/**/*.msi
-            src-tauri/target/release/bundle/**/*.AppImage
-            src-tauri/target/release/bundle/**/*.deb
-            src-tauri/target/aarch64-apple-darwin/release/bundle/**/*.dmg
-            src-tauri/target/x86_64-apple-darwin/release/bundle/**/*.dmg
 
-  # ── Android (debug APK・署名不要) ────────────────────────────────
-  build-android:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: >-
-            aarch64-linux-android
-            armv7-linux-androideabi
-            x86_64-linux-android
-            i686-linux-android
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-
-      - uses: android-actions/setup-android@v3
-
-      - name: Install NDK
-        run: sdkmanager "ndk;27.0.12077973"
-
-      - name: Install npm deps
-        run: npm install
-
-      - name: Build Android (debug APK)
-        run: npm run tauri android build -- --debug --apk
-        env:
-          NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: naminote-android
-          path: src-tauri/gen/android/app/build/outputs/apk/universal/debug/*.apk
-
-  # ── Linux Flatpak ─────────────────────────────────────────────────
-  build-flatpak:
-    runs-on: ubuntu-22.04
-    container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-47
-      options: --privileged
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # Flatpak sandbox blocks network during build.
-      # Pre-generate cargo-sources.json here (outside the sandbox).
-      - name: Generate Cargo sources for offline build
-        run: |
-          pip3 install aiohttp toml
-          curl -fsSL -o /tmp/flatpak-cargo-generator.py \
-            https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py
-          python3 /tmp/flatpak-cargo-generator.py src-tauri/Cargo.lock \
-            -o flatpak/cargo-sources.json
-
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          bundle: naminote.flatpak
-          manifest-path: flatpak/com.github.ShotaXiangtai.naminote.yml
-          cache-key: flatpak-builder-${{ github.sha }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: naminote-flatpak
-          path: naminote.flatpak
-
-  # ── Release: 全成果物を GitHub Release に添付 ─────────────────────
   release:
-    needs: [build-desktop, build-android, build-flatpak]
+    needs: build-windows
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Download all artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist/

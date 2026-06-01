@@ -181,24 +181,6 @@ document.getElementById('btn-freq').addEventListener('click', () => {
   if (freqOpen) renderFreq()
 })
 
-// ── Touch swipe for page navigation ──────────────────────────────
-let touchStartX = 0
-let touchStartY = 0
-
-editor.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX
-  touchStartY = e.touches[0].clientY
-}, { passive: true })
-
-editor.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX
-  const dy = e.changedTouches[0].clientY - touchStartY
-  // Horizontal swipe > 60px and more horizontal than vertical
-  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-    if (dx < 0 && currentPage < pages.length - 1) loadPage(currentPage + 1)
-    else if (dx > 0 && currentPage > 0)           loadPage(currentPage - 1)
-  }
-}, { passive: true })
 
 // ── Toolbar buttons ───────────────────────────────────────────────
 document.getElementById('btn-new').addEventListener('click', newSession)
